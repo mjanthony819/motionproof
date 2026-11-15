@@ -24,10 +24,11 @@ jobs:
           with zipfile.ZipFile(io.BytesIO(payload)) as z:
               assert len(z.infolist())<100, 'Unexpected archive count'
               for info in z.infolist():
+                  if info.is_dir(): continue
                   p=PurePosixPath(info.filename)
                   assert not p.is_absolute() and '..' not in p.parts
                   assert p.parts[0]=='MotionProof' and len(p.parts)>1
-                  assert not info.is_dir() and info.file_size<25000000
+                  assert info.file_size<25000000
                   assert (info.external_attr >> 16) & 0o170000 != 0o120000, 'No symlinks'
                   assert '.git' not in p.parts and '.github' not in p.parts
                   target=root.joinpath(*p.parts[1:]).resolve()
